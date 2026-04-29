@@ -75,8 +75,8 @@
 
     .powered {
       font-size: 11px;
-      background: #f0fdf4;
-      color: #15803d;
+      background: #e8f4fd;
+      color: #1a73e8;
       padding: 4px 10px;
       border-radius: 20px;
       font-weight: 500;
@@ -116,6 +116,7 @@
       font-size: 14px;
       line-height: 1.6;
       word-wrap: break-word;
+      white-space: pre-wrap;
     }
 
     .bubble.ai {
@@ -231,7 +232,7 @@
         <div class="bot-name">Aria</div>
         <div class="bot-status">● Online · ready to help</div>
       </div>
-      <div class="powered">AI Powered</div>
+      <div class="powered">Gemini AI</div>
     </div>
 
     <div class="messages" id="messages">
@@ -260,11 +261,11 @@
     </div>
   </div>
 
-  <div class="footer-note">Powered by Claude · Anthropic</div>
+  <div class="footer-note">Powered by Gemini · Google AI</div>
 
   <script>
-    const API_KEY    = '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';
-    const WORKER_URL = 'https://icy-thunder-18d2.hamzahere88.workers.dev';
+    const API_KEY = 'AIzaSyDogi2vqRkAS21XnP2ia0an_bBJr6Nxr8U';
+    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + API_KEY;
 
     const messagesEl    = document.getElementById('messages');
     const inputEl       = document.getElementById('chatInput');
@@ -347,27 +348,27 @@
       sendBtn.disabled = true;
 
       addMessage('user', text);
-      history.push({ role: 'user', content: text });
+      history.push({ role: 'user', parts: [{ text }] });
       showTyping();
 
       try {
-        const res = await fetch(WORKER_URL, {
+        const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            apiKey: API_KEY,
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            system: 'You are Aria, a friendly and professional AI assistant in a demo chatbot. Keep responses concise (2-4 sentences) and helpful. Be warm, clear, and impressive.',
-            messages: history
+            system_instruction: {
+              parts: [{ text: 'You are Aria, a friendly and professional AI assistant in a demo chatbot. Keep responses concise (2-4 sentences) and helpful. Be warm, clear, and impressive.' }]
+            },
+            contents: history
           })
         });
 
         const data = await res.json();
         removeTyping();
-        const reply = data.content?.[0]?.text || "Sorry, I could not get a response. Please try again.";
+
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I could not get a response. Please try again.";
         addMessage('assistant', reply);
-        history.push({ role: 'assistant', content: reply });
+        history.push({ role: 'model', parts: [{ text: reply }] });
 
       } catch (e) {
         removeTyping();
